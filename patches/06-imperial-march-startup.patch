@@ -1,32 +1,44 @@
 diff --git a/examples/companion_radio/main.cpp b/examples/companion_radio/main.cpp
-index 876dc9c..8d8bdb4 100644
+index 876dc9c..ecc4200 100644
 --- a/examples/companion_radio/main.cpp
 +++ b/examples/companion_radio/main.cpp
-@@ -2,6 +2,13 @@
+@@ -2,6 +2,19 @@
  #include <Mesh.h>
  #include "MyMesh.h"
  
 +#ifdef PIN_BUZZER
-+#include <NonBlockingRtttl.h>
-+
-+// Imperial March (Star Wars) — plays at startup
-+const char IMPERIAL_MARCH[] = "starwars:d=4,o=5,b=250:g,g,g,2d#,8a#,g,2d#,g,4d#,d,c,2a#,g,d,c,a#,g#,g,2f";
++// Imperial March (Star Wars) — note arrays from Gemini
++// Duty cycle 40% = ~20% quieter than default 50%
++static const int IMPERIAL_NOTES[] = {
++  440, 440, 440, 349, 523, 440, 349, 523, 440,  // A4 A4 A4 F4 C5 A4 F4 C5 A4
++  659, 659, 659, 698, 523, 415, 349, 523, 440   // E5 E5 E5 F5 C5 GS4 F4 C5 A4
++};
++static const int IMPERIAL_DURS[] = {
++  4, 4, 4, 5, 16, 4, 5, 16, 2,   // quarter quarter quarter dotted-quarter? 16th...
++  4, 4, 4, 5, 16, 4, 5, 16, 2
++};
 +#endif
 +
  // Believe it or not, this std C function is busted on some platforms!
  static uint32_t _atoi(const char* sp) {
    uint32_t n = 0;
-@@ -123,6 +130,15 @@ void setup() {
+@@ -123,6 +136,21 @@ void setup() {
    }
  #endif
  
 +#ifdef PIN_BUZZER
-+  // Startup jingle: Imperial March (Star Wars) ~5 seconds
-+  rtttl::begin(PIN_BUZZER, IMPERIAL_MARCH);
-+  while (!rtttl::done()) {
-+    rtttl::play();
-+    delay(5);
++  // Startup jingle: Imperial March (Star Wars) ~4.6 sec, 40% duty
++  ledcAttachChannel(PIN_BUZZER, 2000, 10, 0);
++  const int numNotes = sizeof(IMPERIAL_NOTES) / sizeof(IMPERIAL_NOTES[0]);
++  for (int i = 0; i < numNotes; i++) {
++    int noteMs = 1000 / IMPERIAL_DURS[i];
++    ledcWriteTone(0, IMPERIAL_NOTES[i]);
++    ledcWrite(0, 410);  // 40% duty (~20% quieter than 50% default)
++    delay(noteMs);
++    ledcWriteTone(0, 0);
++    delay(noteMs * 0.3);
 +  }
++  ledcDetach(PIN_BUZZER);
 +#endif
 +
    if (!radio_init()) { halt(); }
