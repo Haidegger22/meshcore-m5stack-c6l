@@ -1,0 +1,16 @@
+# Patch NonBlockingRTTTL library to reduce buzzer volume by ~10%
+# File: .pio/libdeps/*/NonBlockingRTTTL/src/NonBlockingRtttl.cpp
+# This modifies the ESP32 tone() function to use 45% duty cycle instead of 50%
+#
+# Apply after PlatformIO has downloaded the library:
+#   cd $(pio lib list --json 2>/dev/null | jq -r '.[]|select(.name=="NonBlockingRTTTL")|.path')
+#   patch -p0 < 05-rtttl-volume-10pct.patch
+
+--- NonBlockingRtttl.cpp.orig
++++ NonBlockingRtttl.cpp
+@@ void tone(uint8_t pin, unsigned int frq, unsigned long duration) {
+       // don't care about the given duration
+       uint8_t channel = getEsp32ChannelForPin(pin);
+       ledcWriteTone(channel, frq);
++      ledcWrite(channel, 460); // ~45% duty (10% quieter than 50% default)
+     }
