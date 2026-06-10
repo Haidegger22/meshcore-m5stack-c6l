@@ -1,42 +1,68 @@
 diff --git a/examples/companion_radio/main.cpp b/examples/companion_radio/main.cpp
-index 876dc9c..f7ac16c 100644
+index 876dc9c..7dd69bb 100644
 --- a/examples/companion_radio/main.cpp
 +++ b/examples/companion_radio/main.cpp
-@@ -2,6 +2,19 @@
+@@ -2,6 +2,41 @@
  #include <Mesh.h>
  #include "MyMesh.h"
  
 +#ifdef PIN_BUZZER
 +// Imperial March (Star Wars) — note arrays from Gemini
-+// Duty cycle 40% = ~20% quieter than default 50%
 +static const int IMPERIAL_NOTES[] = {
 +  440, 440, 440, 349, 523, 440, 349, 523, 440,  // A4 A4 A4 F4 C5 A4 F4 C5 A4
 +  659, 659, 659, 698, 523, 415, 349, 523, 440   // E5 E5 E5 F5 C5 GS4 F4 C5 A4
 +};
 +static const int IMPERIAL_DURS[] = {
-+  4, 4, 4, 5, 16, 4, 5, 16, 2,   // quarter quarter quarter dotted-quarter? 16th...
++  4, 4, 4, 5, 16, 4, 5, 16, 2,
 +  4, 4, 4, 5, 16, 4, 5, 16, 2
 +};
++static const int IMPERIAL_LEN = sizeof(IMPERIAL_NOTES) / sizeof(IMPERIAL_NOTES[0]);
++static int _melodyIdx = -1;
++static unsigned long _melodyNext = 0;
++static bool _melodyToneOn = false;
++
++void startMelody() { _melodyIdx = 0; _melodyNext = 0; _melodyToneOn = false; }
++
++void tickMelody() {
++  if (_melodyIdx < 0 || _melodyIdx >= IMPERIAL_LEN) return;
++  unsigned long now = millis();
++  if (!_melodyToneOn) {
++    int ms = 1200 / IMPERIAL_DURS[_melodyIdx];
++    tone(PIN_BUZZER, IMPERIAL_NOTES[_melodyIdx], ms);
++    _melodyToneOn = true;
++    _melodyNext = now + ms * 1.3;
++  }
++  if (now >= _melodyNext) {
++    noTone(PIN_BUZZER);
++    _melodyIdx++;
++    _melodyToneOn = false;
++    if (_melodyIdx >= IMPERIAL_LEN) _melodyIdx = -1;
++  }
++}
 +#endif
 +
  // Believe it or not, this std C function is busted on some platforms!
  static uint32_t _atoi(const char* sp) {
    uint32_t n = 0;
-@@ -123,6 +136,17 @@ void setup() {
+@@ -123,6 +158,11 @@ void setup() {
    }
  #endif
  
 +#ifdef PIN_BUZZER
-+  // Startup jingle: Imperial March (Star Wars) ~4.6 sec, powered by tone()
-+  const int numNotes = sizeof(IMPERIAL_NOTES) / sizeof(IMPERIAL_NOTES[0]);
-+  for (int i = 0; i < numNotes; i++) {
-+    int noteMs = 1200 / IMPERIAL_DURS[i];
-+    tone(PIN_BUZZER, IMPERIAL_NOTES[i], noteMs);
-+    delay(noteMs * 1.3);
-+    noTone(PIN_BUZZER);
-+  }
++  // Startup jingle: Imperial March (non-blocking, plays in background)
++  startMelody();
 +#endif
 +
    if (!radio_init()) { halt(); }
  
    fast_rng.begin(radio_get_rng_seed());
+@@ -223,6 +263,9 @@ void setup() {
+ }
+ 
+ void loop() {
++#ifdef PIN_BUZZER
++  tickMelody();
++#endif
+   the_mesh.loop();
+   sensors.loop();
+ #ifdef DISPLAY_CLASS
