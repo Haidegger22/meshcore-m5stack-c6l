@@ -1,0 +1,80 @@
+diff --git a/variants/m5stack_unit_c6l/platformio.ini b/variants/m5stack_unit_c6l/platformio.ini
+index ed9c48d..96d9bec 100644
+--- a/variants/m5stack_unit_c6l/platformio.ini
++++ b/variants/m5stack_unit_c6l/platformio.ini
+@@ -132,6 +132,75 @@ lib_deps =
+   adafruit/Adafruit SSD1306 @ ^2.5.13
+   end2endzone/NonBlockingRTTTL@^1.3.0
+ 
++[env:m5stack_unit_c6l_companion_radio_ble_lp]
++extends = m5stack_unit_c6l
++build_flags =
++  -I variants/m5stack_unit_c6l/companion
++  ${m5stack_unit_c6l.build_flags}
++  -D POWER_SAVING=1
++  -D MAX_CONTACTS=350
++  -D MAX_GROUP_CHANNELS=40
++  -D BLE_PIN_CODE=123456
++  -D OFFLINE_QUEUE_SIZE=256
++  -D ENABLE_PRIVATE_KEY_IMPORT=1
++  -D ENABLE_PRIVATE_KEY_EXPORT=1
++  ; Power saving: display timeout only (CPU awake, BLE stays connected)
++  ; TX and RX boost at full power (22dBm, boosted) - user controls via app
++  -D MAX_LORA_TX_POWER=22
++  -D SX126X_RX_BOOSTED_GAIN=1
++  ; Display configuration (64x48 SSD1306 OLED via SPI)
++  -D DISPLAY_CLASS=SSD1306SPIDisplay
++  -D DISPLAY_CS=6
++  -D DISPLAY_DC=18
++  -D DISPLAY_RST=15
++  -D DISPLAY_WIDTH=64
++  -D DISPLAY_HEIGHT=48
++  -D DISPLAY_ROTATION=2
++build_src_filter = ${m5stack_unit_c6l.build_src_filter}
++  +<helpers/esp32/*.cpp>
++  -<helpers/esp32/ESPNOWRadio.cpp>
++  +<helpers/ui/SSD1306SPIDisplay.cpp>
++  +<../examples/companion_radio/*.cpp>
++  +<../variants/m5stack_unit_c6l/companion/UITask.cpp>
++lib_deps =
++  ${m5stack_unit_c6l.lib_deps}
++  densaugeo/base64 @ ~1.4.0
++  end2endzone/NonBlockingRTTTL@^1.3.0
++  adafruit/Adafruit SSD1306 @ ^2.5.13
++
++[env:m5stack_unit_c6l_repeater_lp]
++extends = m5stack_unit_c6l
++build_flags =
++  ${m5stack_unit_c6l.build_flags}
++  -D POWER_SAVING=1
++  -D ADVERT_NAME='"M5Stack C6L Repeater LP"'
++  -D ADVERT_LAT=0.0
++  -D ADVERT_LON=0.0
++  -D ADMIN_PASSWORD='"password"'
++  -D MAX_NEIGHBOURS=50
++  -D MESH_PACKET_LOGGING=1
++  ; Power saving: lower TX power & disable RX boost
++  -D LORA_TX_POWER=14
++  -D SX126X_RX_BOOSTED_GAIN=0
++  ; Display configuration (64x48 SSD1306 OLED via SPI)
++  -D DISPLAY_CLASS=SSD1306SPIDisplay
++  -D DISPLAY_CS=6
++  -D DISPLAY_DC=18
++  -D DISPLAY_RST=15
++  -D DISPLAY_WIDTH=64
++  -D DISPLAY_HEIGHT=48
++  -D DISPLAY_ROTATION=2
++build_src_filter = ${m5stack_unit_c6l.build_src_filter}
++  +<helpers/ui/SSD1306SPIDisplay.cpp>
++  +<../examples/simple_repeater>
++  -<../examples/simple_repeater/UITask.cpp>
++  +<../variants/m5stack_unit_c6l/repeater/UITask.cpp>
++lib_deps =
++  ${m5stack_unit_c6l.lib_deps}
++  bakercp/CRC32 @ ^2.0.0
++  adafruit/Adafruit SSD1306 @ ^2.5.13
++  end2endzone/NonBlockingRTTTL@^1.3.0
++
+ [env:m5stack_unit_c6l_room_server]
+ extends = m5stack_unit_c6l
+ build_flags = ${m5stack_unit_c6l.build_flags}

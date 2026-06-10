@@ -1,0 +1,42 @@
+diff --git a/variants/m5stack_unit_c6l/companion/UITask.cpp b/variants/m5stack_unit_c6l/companion/UITask.cpp
+index 9ebf7bb..b868e45 100644
+--- a/variants/m5stack_unit_c6l/companion/UITask.cpp
++++ b/variants/m5stack_unit_c6l/companion/UITask.cpp
+@@ -2,7 +2,8 @@
+ #include <target.h>
+ #include "../../examples/companion_radio/MyMesh.h"
+ 
+-#define AUTO_OFF_MILLIS    30000  // 30 seconds
++#define AUTO_OFF_MILLIS    30000  // 30 seconds (first boot / normal)
++#define AUTO_OFF_MILLIS_LP  5000   // 5 seconds (power save, after first boot)
+ #define BOOT_SCREEN_MILLIS 4000  // 4 seconds
+ #define SCROLL_SPEED_MS    150   // pixels per tick
+ #define SCROLL_PAUSE_MS    2000  // pause at start/end
+@@ -30,10 +31,14 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
+ void UITask::newMsg(uint8_t path_len, const char* from_name, const char* text, int msgcount) {
+   _msgcount = msgcount;
+   _need_refresh = true;
++#ifdef POWER_SAVING
++  // Don't wake display on messages in power save mode (button only)
++#else
+   if (_display != NULL && !_display->isOn()) {
+     _display->turnOn();
+     _auto_off = millis() + AUTO_OFF_MILLIS;
+   }
++#endif
+ }
+ 
+ void UITask::renderScreen() {
+@@ -102,7 +107,11 @@ void UITask::loop() {
+       _display->turnOn();
+       _need_refresh = true;
+     }
+-    _auto_off = millis() + AUTO_OFF_MILLIS;
++#ifdef POWER_SAVING
++    _auto_off = millis() + AUTO_OFF_MILLIS_LP;  // 5 sec in powersave
++#else
++    _auto_off = millis() + AUTO_OFF_MILLIS;     // 30 sec normally
++#endif
+   }
+ 
+   if (_display->isOn()) {
