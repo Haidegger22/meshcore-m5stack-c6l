@@ -1,5 +1,5 @@
 diff --git a/variants/m5stack_unit_c6l/companion/UITask.cpp b/variants/m5stack_unit_c6l/companion/UITask.cpp
-index 9ebf7bb..b868e45 100644
+index 9ebf7bb..0bd8482 100644
 --- a/variants/m5stack_unit_c6l/companion/UITask.cpp
 +++ b/variants/m5stack_unit_c6l/companion/UITask.cpp
 @@ -2,7 +2,8 @@
@@ -27,16 +27,27 @@ index 9ebf7bb..b868e45 100644
  }
  
  void UITask::renderScreen() {
-@@ -102,7 +107,11 @@ void UITask::loop() {
+@@ -102,7 +107,12 @@ void UITask::loop() {
        _display->turnOn();
        _need_refresh = true;
      }
 -    _auto_off = millis() + AUTO_OFF_MILLIS;
 +#ifdef POWER_SAVING
 +    _auto_off = millis() + AUTO_OFF_MILLIS_LP;  // 5 sec in powersave
++    if (getCpuFrequencyMhz() == 80) setCpuFrequencyMhz(160);  // boost CPU
 +#else
 +    _auto_off = millis() + AUTO_OFF_MILLIS;     // 30 sec normally
 +#endif
    }
  
    if (_display->isOn()) {
+@@ -121,6 +131,9 @@ void UITask::loop() {
+ 
+     if (millis() > _auto_off) {
+       _display->turnOff();
++#ifdef POWER_SAVING
++      setCpuFrequencyMhz(80);  // drop to low-power frequency
++#endif
+     }
+   }
+ }
