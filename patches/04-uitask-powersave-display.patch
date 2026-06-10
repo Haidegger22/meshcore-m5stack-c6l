@@ -1,5 +1,5 @@
 diff --git a/variants/m5stack_unit_c6l/companion/UITask.cpp b/variants/m5stack_unit_c6l/companion/UITask.cpp
-index 9ebf7bb..0bd8482 100644
+index 9ebf7bb..ae6231b 100644
 --- a/variants/m5stack_unit_c6l/companion/UITask.cpp
 +++ b/variants/m5stack_unit_c6l/companion/UITask.cpp
 @@ -2,7 +2,8 @@
@@ -12,7 +12,15 @@ index 9ebf7bb..0bd8482 100644
  #define BOOT_SCREEN_MILLIS 4000  // 4 seconds
  #define SCROLL_SPEED_MS    150   // pixels per tick
  #define SCROLL_PAUSE_MS    2000  // pause at start/end
-@@ -30,10 +31,14 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
+@@ -14,6 +15,7 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
+   _msgcount = 0;
+   _next_refresh = 0;
+   _auto_off = millis() + AUTO_OFF_MILLIS;
++  _boot_start = millis();
+   _scroller.reset();
+ 
+   Serial.println("UITask: begin()");
+@@ -30,10 +32,14 @@ void UITask::begin(DisplayDriver* display, SensorManager* sensors, NodePrefs* no
  void UITask::newMsg(uint8_t path_len, const char* from_name, const char* text, int msgcount) {
    _msgcount = msgcount;
    _need_refresh = true;
@@ -27,7 +35,16 @@ index 9ebf7bb..0bd8482 100644
  }
  
  void UITask::renderScreen() {
-@@ -102,7 +107,12 @@ void UITask::loop() {
+@@ -42,7 +48,7 @@ void UITask::renderScreen() {
+   int w = _display->width();
+   char tmp[32];
+ 
+-  if (millis() < BOOT_SCREEN_MILLIS) {
++  if (millis() - _boot_start < BOOT_SCREEN_MILLIS) {
+     // Boot screen
+     _display->setTextSize(1);
+     _display->drawTextCentered(w / 2, 3, "MeshCore");
+@@ -102,7 +108,12 @@ void UITask::loop() {
        _display->turnOn();
        _need_refresh = true;
      }
@@ -41,7 +58,7 @@ index 9ebf7bb..0bd8482 100644
    }
  
    if (_display->isOn()) {
-@@ -121,6 +131,9 @@ void UITask::loop() {
+@@ -121,6 +132,9 @@ void UITask::loop() {
  
      if (millis() > _auto_off) {
        _display->turnOff();
@@ -51,3 +68,14 @@ index 9ebf7bb..0bd8482 100644
      }
    }
  }
+diff --git a/variants/m5stack_unit_c6l/companion/UITask.h b/variants/m5stack_unit_c6l/companion/UITask.h
+index 5704ad0..d1ff8b7 100644
+--- a/variants/m5stack_unit_c6l/companion/UITask.h
++++ b/variants/m5stack_unit_c6l/companion/UITask.h
+@@ -30,5 +30,6 @@ private:
+   bool _need_refresh;
+   uint32_t _next_refresh;
+   uint32_t _auto_off;
++  uint32_t _boot_start;
+   MarqueeScroller _scroller;
+ };
