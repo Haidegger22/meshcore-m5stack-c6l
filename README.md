@@ -56,7 +56,9 @@ esptool.py --chip esp32c6 --port /dev/ttyACM0 --before default_reset --after har
 
 ### 4. Подключение через приложение
 
-После прошивки C6L перезагрузится. На OLED-дисплее отобразится **PIN-код** для BLE-подключения (по умолчанию: `123456`).
+После прошивки C6L перезагрузится. На OLED-дисплее отобразится **случайный PIN-код** для BLE-подключения.
+
+> 💡 Если нужен постоянный PIN — измените его в приложении MeshCore: **Settings → BLE PIN Code**.
 
 Установите приложение MeshCore:
 - 📱 [Android](https://play.google.com/store/apps/details?id=com.liamcottle.meshcore.android)
