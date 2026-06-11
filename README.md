@@ -110,6 +110,8 @@ esptool.py --chip esp32c6 --port /dev/ttyACM0 --before default_reset --after har
 
 > 💡 Если нужен постоянный PIN — измените его в приложении MeshCore: **Settings → BLE PIN Code**.
 
+> 💡 **Смена имени устройства:** после изменения имени в приложении (через настройки узла) **обязательно сделайте Reboot** там же в настройках. Имя сохраняется в памяти устройства при переименовании, но BLE-реклама обновляется только при перезагрузке. Без ребута после отключения имя вернётся к предыдущему.
+
 Установите приложение MeshCore:
 - 📱 [Android](https://play.google.com/store/apps/details?id=com.liamcottle.meshcore.android)
 - 📱 [iOS](https://apps.apple.com/us/app/meshcore/id6742354151?platform=iphone)
